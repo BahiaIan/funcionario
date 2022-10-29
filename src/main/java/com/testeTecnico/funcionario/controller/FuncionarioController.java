@@ -22,7 +22,7 @@ import com.testeTecnico.funcionario.repository.FuncionarioRepository;
 
 @RestController
 @RequestMapping("/api/funcionario")
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*")
 public class FuncionarioController {
 
 	public final String emailPattern = "^(.+)@(\\S+)$";
