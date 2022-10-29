@@ -2,6 +2,7 @@ package com.testeTecnico.funcionario.controller;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,9 +25,12 @@ import com.testeTecnico.funcionario.repository.FuncionarioRepository;
 @CrossOrigin(origins = "http://localhost:4200")
 public class FuncionarioController {
 
+	public final String emailPattern = "^(.+)@(\\S+)$";
+	public final String digitsPattern = "\"[0-9]+\"";
+
 	@Autowired
 	private FuncionarioRepository repository;
-	
+
 	@GetMapping
 	public List<FuncionarioModel> getAll() {
 		return (List<FuncionarioModel>) repository.findAll();
@@ -44,8 +48,13 @@ public class FuncionarioController {
 	}
 
 	@PostMapping
-	public FuncionarioModel persist(@Validated @RequestBody FuncionarioModel funcionario) {
-		return repository.save(funcionario);
+	public ResponseEntity<FuncionarioModel> persist(@Validated @RequestBody FuncionarioModel funcionario)
+			throws Exception {
+		if (!patternMatches(funcionario.getEmail(), emailPattern)
+				|| !patternMatches(funcionario.getNis(), digitsPattern)) {
+			return ResponseEntity.badRequest().build();
+		}
+		return ResponseEntity.ok().body(repository.save(funcionario));
 	}
 
 	@PutMapping
@@ -58,6 +67,10 @@ public class FuncionarioController {
 		repository.deleteById(idFuncionario);
 		return ResponseEntity.noContent().build();
 
+	}
+
+	public static boolean patternMatches(String data, String regexPattern) {
+		return Pattern.compile(regexPattern).matcher(data).matches();
 	}
 
 }
