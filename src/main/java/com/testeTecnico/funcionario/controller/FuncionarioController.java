@@ -39,7 +39,6 @@ public class FuncionarioController {
 	@GetMapping("/{idFuncionario}")
 	public ResponseEntity<FuncionarioModel> getById(@PathVariable(value = "idFuncionario") Long idFuncionario) {
 		Optional<FuncionarioModel> funcionario = repository.findById(idFuncionario);
-
 		if (funcionario.isPresent()) {
 			return ResponseEntity.ok().body(funcionario.get());
 		} else {
@@ -50,16 +49,18 @@ public class FuncionarioController {
 	@PostMapping
 	public ResponseEntity<FuncionarioModel> persist(@Validated @RequestBody FuncionarioModel funcionario)
 			throws Exception {
-		if (!patternMatches(funcionario.getEmail(), emailPattern)
-				|| !patternMatches(funcionario.getNis(), digitsPattern)) {
+		if (verificaEmaiElNis(funcionario)) {
 			return ResponseEntity.badRequest().build();
 		}
 		return ResponseEntity.ok().body(repository.save(funcionario));
 	}
 
 	@PutMapping
-	public FuncionarioModel edit(@Validated @RequestBody FuncionarioModel funcionario) {
-		return repository.save(funcionario);
+	public ResponseEntity<FuncionarioModel> edit(@Validated @RequestBody FuncionarioModel funcionario) {
+		if (verificaEmaiElNis(funcionario)) {
+			return ResponseEntity.badRequest().build();
+		}
+		return ResponseEntity.ok().body(repository.save(funcionario));
 	}
 
 	@DeleteMapping("/{idFuncionario}")
@@ -69,8 +70,13 @@ public class FuncionarioController {
 
 	}
 
-	public static boolean patternMatches(String data, String regexPattern) {
-		return Pattern.compile(regexPattern).matcher(data).matches();
+	public Boolean verificaEmaiElNis(FuncionarioModel funcionario) {
+		return !patternMatches(funcionario.getEmail(), emailPattern)
+				|| !patternMatches(funcionario.getNis(), digitsPattern);
+	}
+
+	public static boolean patternMatches(String valor, String regexPattern) {
+		return Pattern.compile(regexPattern).matcher(valor).matches();
 	}
 
 }
